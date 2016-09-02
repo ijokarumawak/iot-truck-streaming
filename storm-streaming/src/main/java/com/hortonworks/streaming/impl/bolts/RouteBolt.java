@@ -69,6 +69,7 @@ public class RouteBolt extends BaseRichBolt {
         int driverId = input.getIntegerByField("driverId");
         int truckId = input.getIntegerByField("truckId");
         Timestamp eventTime = (Timestamp) input.getValueByField("eventTime");
+        long ts = eventTime.getTime();
         String eventType = input.getStringByField("eventType");
         double longitude = input.getDoubleByField("longitude");
         double latitude = input.getDoubleByField("latitude");
@@ -80,7 +81,7 @@ public class RouteBolt extends BaseRichBolt {
         String hbaseRowKey = constructHbaseRowKey(driverId, truckId, eventTime);
 
 
-        LOG.info("driver ID " + driverId + "truckId " + truckId + " eventTime " + eventTime);
+        LOG.info("driver ID " + driverId + "truckId " + truckId + " eventTime " + ts);
         LOG.info("eventType " + eventType + " longitude " + longitude + " latitude " + latitude);
         LOG.info("driverName " + driverName + " routeId " + routeId + " routeName " + routeName);
 
@@ -91,13 +92,13 @@ public class RouteBolt extends BaseRichBolt {
         if (!eventType.equals(EventType.NORMAL.getType())) {
             LOG.info("Checking EventType from enum in if: " + EventType.NORMAL.getType());
             //RouteBolt emits a tuple with 11 fields relating to truckevents
-            outputCollector.emit(EventTypeStream.NOT_NORMAL.getStream(), input, new Values(driverId, truckId, eventTime, eventType, longitude, latitude,
+            outputCollector.emit(EventTypeStream.NOT_NORMAL.getStream(), input, new Values(driverId, truckId, ts, eventType, longitude, latitude,
                    driverName, routeId, routeName, hbaseRowKey));
         }
 
         // All other events go into the "default" stream
         //RouteBolt emits a tuple with 11 fields relating to truckevents
-        outputCollector.emit("default", input, new Values(driverId, truckId, eventTime, eventType, longitude, latitude,
+        outputCollector.emit("default", input, new Values(driverId, truckId, ts, eventType, longitude, latitude,
                 driverName, routeId, routeName, hbaseRowKey));
 
         //acknowledge even if there is an error
@@ -131,9 +132,9 @@ public class RouteBolt extends BaseRichBolt {
     /*Declares RouteBolt emits 1-tuples with 11 fields called "driverId", "truckId", "eventTime", "eventType", "longitude", "latitude",
             "incidentTotalCount", "driverName", "routeId", "routeName", "hbaseRowKey".*/
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("driverId", "truckId", "eventTime", "eventType", "longitude", "latitude",
+        declarer.declare(new Fields("driverId", "truckId", "ts", "eventType", "longitude", "latitude",
                 "driverName", "routeId", "routeName", "hbaseRowKey"));
-        declarer.declareStream(EventTypeStream.NOT_NORMAL.getStream(), new Fields("driverId", "truckId", "eventTime", "eventType", "longitude", "latitude",
+        declarer.declareStream(EventTypeStream.NOT_NORMAL.getStream(), new Fields("driverId", "truckId", "ts", "eventType", "longitude", "latitude",
                 "driverName", "routeId", "routeName", "hbaseRowKey"));
     }
 
