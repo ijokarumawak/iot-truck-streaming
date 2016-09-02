@@ -224,7 +224,7 @@ public class TruckEventKafkaExperimTopology extends BaseTruckEventTopology {
 
     // TODO: Schould probably be in a global place to be called by all the bolts
     private Fields getFields() {
-        return new Fields("driverId", "truckId", "eventTime", "eventType", "latitude", "longitude", "driverName", "routeId", "routeName", "hbaseRowKey");
+        return new Fields("driverId", "truckId", "ts", "eventType", "latitude", "longitude", "driverName", "routeId", "routeName", "hbaseRowKey");
     }
 
     private Fields getDriverId() {
