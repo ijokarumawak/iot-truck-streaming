@@ -14,6 +14,7 @@
         <storm.kafka.version>1.0.1.2.5.1.0-9</storm.kafka.version>
         <storm.hdfs.version>1.0.1.2.5.1.0-9</storm.hdfs.version>
         <kafka.version>0.10.0.2.5.1.0-9</kafka.version>
+        <nifi.version>1.0.0.2.0.0.0-570</nifi.version>
         <hbase.version>1.1.2.2.5.1.0-9</hbase.version>
         <hive.version>2.1.0.2.5.1.0-9</hive.version>
         <hadoop.version>2.7.3.2.5.1.0-9</hadoop.version>
@@ -67,6 +68,14 @@
             <artifactId>transport-domain</artifactId>
             <version>${truck.topology.domain.version}</version>
         </dependency>
+
+        <!-- NiFi Dependencies -->
+        <dependency>
+            <groupId>org.apache.nifi</groupId>
+            <artifactId>nifi-storm-spout</artifactId>
+            <version>${nifi.version}</version>
+        </dependency>
+
         <!-- Kafka Dependencies -->
 		<dependency>
 			<groupId>org.apache.kafka</groupId>
@@ -90,8 +99,8 @@
                     <artifactId>log4j</artifactId>
                 </exclusion>
             </exclusions>
-		</dependency>	
-		
+		</dependency>
+
         <!-- Storm Dependencies -->
         <dependency>
             <groupId>org.apache.storm</groupId>
@@ -110,7 +119,7 @@
             </exclusions>
         </dependency>
 
-	           
+
         <!-- Storm Kafka Dependencies -->
 
 
@@ -119,7 +128,7 @@
             <artifactId>storm-kafka</artifactId>
             <version>${storm.kafka.version}</version>
         </dependency>
-       
+
 
         <!--
         <dependency>
@@ -338,7 +347,7 @@
                 </exclusion>
       		</exclusions>
     	</dependency>
-        
+
 
         <dependency>
 		    <groupId>org.apache.hive.hcatalog</groupId>
@@ -363,7 +372,7 @@
             </exclusion>
             </exclusions>
 	</dependency>
-	
+
 
 	<dependency>
 		<groupId>org.apache.hive</groupId>
@@ -563,4 +572,3 @@
         </plugins>
     </build>
 </project>
-
