@@ -2,11 +2,18 @@
 package com.hortonworks.streaming.impl.topologies;
 
 import com.hortonworks.streaming.impl.bolts.common.EventTypeStream;
+import org.apache.nifi.remote.client.SiteToSiteClient;
+import org.apache.nifi.remote.client.SiteToSiteClientConfig;
+import org.apache.nifi.storm.NiFiBolt;
+import org.apache.nifi.storm.NiFiDataPacketBuilder;
+import org.apache.nifi.storm.NiFiDataPacket;
+
 import org.apache.storm.Config;
 import org.apache.storm.StormSubmitter;
 import org.apache.storm.spout.SchemeAsMultiScheme;
 import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.tuple.Fields;
+import org.apache.storm.tuple.Tuple;
 import com.hortonworks.streaming.impl.bolts.*;
 import com.hortonworks.streaming.impl.bolts.hdfs.FileTimeRotationPolicy;
 import com.hortonworks.streaming.impl.bolts.hive.HiveTablePartitionAction;
@@ -30,6 +37,14 @@ import org.apache.storm.hbase.security.HBaseSecurityUtil;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import java.io.Serializable;
+
+/**
+ * Pulls data from Kafka Spout named 'kafkaSpout', Route Bolt breaks the data into multiple fields, then parses the data
+ * to NiFi Input Port named 'Data from Storm', 2 Hbase Bolts and Count Bolt. Data from Count Bolt is passed to the 3rd
+ * HBase bolt in which the incidents are counted per driver.
+ */
 
 public class TruckEventKafkaExperimTopology extends BaseTruckEventTopology {
     private static final Logger LOG = Logger.getLogger(TruckEventKafkaExperimTopology.class);
@@ -79,7 +94,7 @@ public class TruckEventKafkaExperimTopology extends BaseTruckEventTopology {
 
         Map<String, Object> hbaseConf = new HashMap<String, Object>();
         config.put("hbase.conf", hbaseConf);
-                
+
         /* Set the number of workers that will be spun up for this topology.
          * Each worker represents a JVM where executor thread will be spawned from */
         Integer topologyWorkers = Integer.valueOf(topologyConfig.getProperty("storm.trucker.topology.workers"));
@@ -89,11 +104,15 @@ public class TruckEventKafkaExperimTopology extends BaseTruckEventTopology {
         String nimbusHost = topologyConfig.getProperty("nimbus.host");
         config.put(Config.NIMBUS_HOST, nimbusHost);
 
+
         // Set up Kafka Spout to ingest from
         configureKafkaSpout(builder);
 
         // Set up RouteBolt to break the messages from KafkaSpout into multiple parameters
         configureRouteBolt(builder);
+
+        //Set up NiFi Bolt to send tuples back to NiFi
+        configureNiFiBolt(builder);
 
         //Set up CountBolt to count incidents per driver
         configureCountBolt(builder);
@@ -155,6 +174,35 @@ public class TruckEventKafkaExperimTopology extends BaseTruckEventTopology {
         RouteBolt routeBolt = new RouteBolt(true);
         //Defines new bolt in topology
         builder.setBolt(ROUTE_BOLT, routeBolt, 2).shuffleGrouping("kafkaSpout");
+    }
+
+    //NiFi Bolt Pushes 1 tuple from Storm back into NiFi every 4 seconds
+    private void configureNiFiBolt(TopologyBuilder builder) {
+        //Build a Site-To-Site client config for pushing data
+        final SiteToSiteClientConfig outputConfig = new SiteToSiteClient.Builder()
+                .url("http://localhost:9090/nifi")
+                .portName("Data from Storm")
+                .buildConfig();
+
+        final int tickFrequencySeconds = 5;
+        final NiFiDataPacketBuilder niFiDataPacketBuilder = new SimpleNiFiDataPacketBuilder();
+        final NiFiBolt niFiBolt = new NiFiBolt(outputConfig, niFiDataPacketBuilder, tickFrequencySeconds)
+                .withBatchSize(1)
+                .withBatchInterval(4);
+                ;
+
+        builder.setBolt("nifiOutput", niFiBolt).fieldsGrouping(ROUTE_BOLT, getFields());
+    }
+
+     //Simple builder that returns the incoming data packet.
+    static class SimpleNiFiDataPacketBuilder implements NiFiDataPacketBuilder, Serializable {
+
+        private static final long serialVersionUID = 3067274587595578836L;
+
+        @Override
+        public NiFiDataPacket createNiFiDataPacket(Tuple tuple) {
+            return (NiFiDataPacket) tuple.getValues();
+        }
     }
 
     public void configureCountBolt(TopologyBuilder builder) {
