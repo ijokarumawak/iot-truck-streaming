@@ -90,4 +90,4 @@ else
 fi
 
 echo '*** Building and installing demo modules (may take a few minutes)...'
-/root/maven/bin/mvn clean install -DskipTests=true
+/usr/maven/bin/mvn clean install -DskipTests=true
