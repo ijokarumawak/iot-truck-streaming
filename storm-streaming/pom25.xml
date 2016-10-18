@@ -10,13 +10,13 @@
 
     <properties>
 
-        <storm.version>1.0.1.2.5.1.0-9</storm.version>
-        <storm.kafka.version>1.0.1.2.5.1.0-9</storm.kafka.version>
-        <storm.hdfs.version>1.0.1.2.5.1.0-9</storm.hdfs.version>
-        <kafka.version>0.10.0.2.5.1.0-9</kafka.version>
-        <hbase.version>1.1.2.2.5.1.0-9</hbase.version>
-        <hive.version>2.1.0.2.5.1.0-9</hive.version>
-        <hadoop.version>2.7.3.2.5.1.0-9</hadoop.version>
+        <storm.version>1.0.1.2.5.1.1-1</storm.version>
+        <storm.kafka.version>1.0.1.2.5.1.1-1</storm.kafka.version>
+        <storm.hdfs.version>1.0.1.2.5.1.1-1</storm.hdfs.version>
+        <kafka.version>0.10.0.2.5.1.1-1</kafka.version>
+        <hbase.version>1.1.2.2.5.1.1-1</hbase.version>
+        <hive.version>2.1.0.2.5.1.1-1</hive.version>
+        <hadoop.version>2.7.3.2.5.1.1-1</hadoop.version>
         <spark.version>1.6.0</spark.version>
         <phoenix.version>4.7.0.2.5.1.0-9</phoenix.version>
         <jpmml.version>1.0.22</jpmml.version>
